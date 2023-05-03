@@ -1,15 +1,21 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="d-flex vh-100 vw-100 bg-image justify-content-center">
+<div class="vh-100 vw-100 bg-image justify-content-center">
     <h1>じゃんけん</h1>
-    <form method="POST" action="/triangle">
-        <input type="submit" name="hand" value="グー">
-        <input type="submit" name="hand" value="チョキ">
-        <input type="submit" name="hand" value="パー">
-    </form>
-
+    <div class="container vw-100">
+        <form method="POST" action="/triangle">
+            <input type="submit" name="hand" value="グー">
+            <input type="submit" name="hand" value="チョキ">
+            <input type="submit" name="hand" value="パー">
+        </form>
+    </div>
     {% if result %}
-    <p>結果: {{ result }}</p>
+    <div class="container vw-100">
+        <p>自分の手: {{ myhand }}</p>
+        <p>相手の手: {{ cphand }}</p>
+
+        <p>結果: {{ result }}</p>
+    </div>
     {% endif %}
 
 </div>
