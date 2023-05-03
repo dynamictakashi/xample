@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{%block header%}
+<li class="nav-item"><a href="/" class="nav-link">Home</a></li>
+<li class="nav-item"><a href="/triangle" class="nav-link">RSP</a></li>
+<li class="nav-item"><a href="/signup" class="nav-link">reg</a></li>
+<li class="nav-item"><a href="/find" class="nav-link">find</a></li>
+<li class="nav-item"><a href="#" class="nav-link">???</a></li>
+{%endblock%}
+
+{% block content %}
+<div class="vh-100 vw-100 bg-image justify-content-center">
+    <div class="container vw-100">
+    <h1>サインアップ</h1>
+        <form method="POST" action="/signup">
+            <label class="label-form" for="username">ユーザー名</label>
+            <input class="label-control" type="text" name="username">
+            <label class="label-form" for="email">メールアドレス</label>
+            <input class="label-control" type="text" name="email">
+            <input class="btn btn-primary" type="submit">
+        </form>
+    </div>
+</div>
+{% endblock %}

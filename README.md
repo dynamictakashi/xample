@@ -1,1 +1,1 @@
-exampleeeeeee
+example for a plactice that create an application by Flask.
