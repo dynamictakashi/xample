@@ -12,15 +12,15 @@
     <div class="container vw-100">
     <h1>じゃんけん</h1>
         <form method="POST" action="/triangle">
-            <input class="btn btn-primary" type="submit" name="hand" value="グー">
-            <input class="btn btn-primary" type="submit" name="hand" value="チョキ">
-            <input class="btn btn-primary" type="submit" name="hand" value="パー">
+            <input class="btn btn-primary" type="submit" name="hand" value='グー'>
+            <input class="btn btn-primary" type="submit" name="hand" value='チョキ'>
+            <input class="btn btn-primary" type="submit" name="hand" value='パー'>
         </form>
     </div>
     {% if result %}
     <div class="container vw-100">
-        <p>自分の手: {{ myhand }}</p>
-        <p>相手の手: {{ cphand }}</p>
+        <p>自分の手: {{ xhand[myhand] }}</p>
+        <p>相手の手: {{ xhand[cphand] }}</p>
 
         <p>結果: {{ result }}</p>
     </div>
