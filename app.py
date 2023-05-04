@@ -1,23 +1,36 @@
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, url_for
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required
+
+from werkzeug.security import check_password_hash, generate_password_hash
 # 乱数生成用モジュール
 import random
 from flask_sqlalchemy import SQLAlchemy
+import time
 
 app = Flask(__name__)
 app.debug = True
 app.config['DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bbs.db'
+app.config['SECRET_KEY'] = 'secretkey'
 db = SQLAlchemy(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    user_id = db.Column(db.String(64), unique=True, nullable=False)
+    password = db.Column(db.String(128), nullable=False)
 
-    def __repr__(self):
-        return '<User %r>' % self.username
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 @app.route('/')
 def index():
@@ -26,33 +39,18 @@ def index():
 
 @app.route('/triangle', methods=['GET', 'POST'])
 def janken():
-    you = ""
-    me = ""
-    result = ""
     if request.method == 'POST':
         hand = ['グー', 'チョキ', 'パー']
-        me = hand.index(request.form['hand'])
         you = random.randint(0, 2)
-        if (me-you) % 3 == 0:
+        me = hand.index(request.form['hand'])
+        if me == you:
             result = 'あいこ'
-        elif (me-you) % 3 == 1:
+        elif (me-you) % 3 == 2:
             result = '勝ち'
         else:
             result = '負け'
-    return render_template('triangle.html', myhand=me, cphand=you, result=result, xhand=hand)
-
-
-@app.route('/signup', methods=['GET', 'POST'])
-def add_db():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        for_add = User(username=username, email=email)
-        db.session.add(for_add)
-        db.session.commit()
-        return render_template('home.html')
-    else:
-        return render_template('signup.html')
+        return render_template('triangle.html', myhand=me, cphand=you, result=result, xhand=hand)
+    return render_template('triangle.html')
 
 
 @app.route('/find', methods=['GET', 'POST'])  # method"s"にする
@@ -96,3 +94,20 @@ def jankeeen():
         return render_template('sandbox.html')
     else:
         return render_template('sandbox.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        user_id = request.form['user_id']
+        password = request.form['password']
+        user = User.query.filter_by(user_id=user_id).first()
+        if user:
+            error = 'このユーザーIDは既に使用されています。'
+            return render_template('signup.html', error=error)
+        password_hash = generate_password_hash(password, method='sha256')
+        new_user = User(user_id=user_id,password=password_hash)
+        db.session.add(new_user)
+        db.session.commit()
+        login_user(new_user)
+        return redirect(url_for('index'))
+    return render_template('signup.html')
