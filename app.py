@@ -6,6 +6,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import random
 from flask_sqlalchemy import SQLAlchemy
 import time
+# 現在時刻を投稿するためのモジュール
+import datetime
 
 app = Flask(__name__)
 app.debug = True
@@ -17,6 +19,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
+# ログインユーザー
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.String(64), unique=True, nullable=False)
@@ -28,16 +31,37 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+# ブログエントリー
+
+
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(50), nullable=False)
+    body = db.Column(db.String(500), nullable=False)
+    time = db.Column(db.DateTime)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
+# ベース
 @app.route('/')
 def index():
     return render_template('home.html')
 
+# ジャンケン
+
 
 @app.route('/triangle', methods=['GET', 'POST'])
+@login_required
 def janken():
     if request.method == 'POST':
         hand = ['グー', 'チョキ', 'パー']
@@ -51,6 +75,8 @@ def janken():
             result = '負け'
         return render_template('triangle.html', myhand=me, cphand=you, result=result, xhand=hand)
     return render_template('triangle.html')
+
+# DBインジェクション用
 
 
 @app.route('/find', methods=['GET', 'POST'])  # method"s"にする
@@ -68,32 +94,17 @@ def db_find():
     else:
         return render_template('find.html')
 
+# デバッグ用
+
 
 @app.route('/sandbox', methods=['GET', 'POST'])
-def jankeeen():
-    if request.method == 'POST':
-        opo = ""
-        me = ""
-        result = ""
-        hand = ['グー', 'チョキ', 'パー']
-        me = request.form.get('hand')
-        opo = hand[random.randint(0, 2)]
-        if opo == me:
-            result = 'あいこ'
-        elif me == 'グー' and opo == 'チョキ':
-            result = '勝ち'
-        elif me == 'チョキ' and opo == 'パー':
-            result = '勝ち'
-        elif me == 'パー' and opo == 'グー':
-            result = '勝ち'
-        else:
-            result = '負け'
-        print(result)
-        print(me)
-        print(opo)
-        return render_template('sandbox.html')
-    else:
-        return render_template('sandbox.html')
+def sunaba():
+    return render_template('sandbox.html')
+
+# ここから本格的に作成する。
+
+# 登録
+
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -105,9 +116,82 @@ def signup():
             error = 'このユーザーIDは既に使用されています。'
             return render_template('signup.html', error=error)
         password_hash = generate_password_hash(password, method='sha256')
-        new_user = User(user_id=user_id,password=password_hash)
+        new_user = User(user_id=user_id, password=password_hash)
         db.session.add(new_user)
         db.session.commit()
-        login_user(new_user)
         return redirect(url_for('index'))
     return render_template('signup.html')
+
+# ログイン
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user_id = request.form['user_id']
+        password = request.form['password']
+        user = User.query.filter_by(user_id=user_id).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('index'))
+    return render_template('login.html')
+
+# ログアウト
+
+
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+    return render_template('home.html')
+
+# ブログ画面
+
+
+@app.route('/blog', methods=['GET'])
+def blog():
+    posts = Post.query.all()
+    return render_template('blog.html', posts=posts)
+
+# ブログ投稿
+
+
+@app.route('/newpost', methods=['GET', 'POST'])
+@login_required
+def blog_post():
+    if request.method == 'POST':
+        title = request.form['title']
+        body = request.form['body']
+        time = datetime.datetime.now()  # 時間
+        posted = Post(title=title, body=body, time=time)
+        db.session.add(posted)
+        db.session.commit()
+    return render_template('newpost.html')
+
+
+'''
+DBに保存するメソッド
+----
+htmlで書いたものを送信する→受け取る→DBに保存
+DBに保存された内容を取得する→表示する
+'''
+
+# 編集
+
+
+@app.route('/postedit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def blog_edit(id):
+    post = Post.query.get(id)
+    if request.method == 'GET':
+        return render_template('postedit.html', post=post)
+    else:
+        post.title = request.form['title']
+        post.body = request.form['body']
+        post.time = datetime.datetime.now()
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('blog'))
+
+
+# 削除
