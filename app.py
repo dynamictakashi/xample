@@ -154,8 +154,6 @@ def blog():
     return render_template('blog.html', posts=posts)
 
 # ブログ投稿
-
-
 @app.route('/newpost', methods=['GET', 'POST'])
 @login_required
 def blog_post():
@@ -177,8 +175,6 @@ DBに保存された内容を取得する→表示する
 '''
 
 # 編集
-
-
 @app.route('/postedit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def blog_edit(id):
@@ -195,3 +191,11 @@ def blog_edit(id):
 
 
 # 削除
+@app.route('/delete/<int:id>', methods=['GET'])
+@login_required
+def blog_delete(id):
+    post = Post.query.get(id)
+    if request.method == 'GET':
+        db.session.delete(post)
+        db.session.commit()
+    return redirect(url_for('blog'))

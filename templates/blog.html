@@ -15,8 +15,10 @@
         <div class="display-5 fw-bold">{{ post.title}}</div>
         <div>{{ post.time }}</div>
     </div>
-    
-    
+    <div>
+        <a class="btn btn-primary" type="submit" href="/postedit/{{post.id}}" method="POST">編集</a>
+        <a class="btn btn-primary" type="submit" href="/delete/{{post.id}}" method="GET">削除</a>
+    </div>
     <p>{{ post.body }}</p>
 </div>
 {% endfor %}
