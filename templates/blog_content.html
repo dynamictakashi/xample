@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{%block header%}
+<li class="nav-item"><a href="/" class="nav-link">Home</a></li>
+<li class="nav-item"><a href="/triangle" class="nav-link">RSP</a></li>
+<li class="nav-item"><a href="/signup" class="nav-link">reg</a></li>
+<li class="nav-item"><a href="/find" class="nav-link">find</a></li>
+<li class="nav-item"><a href="/login" class="nav-link active">login</a></li>
+{%endblock%}
+
+{% block content %}
+<div class="vh-100 vw-100 bg-image justify-content-center">
+    <div class="container">
+        <div class="d-flex">
+            <div class="display-5 fw-bold">{{ post.title}}</div>
+            <div>{{ post.time }}</div>
+        </div>
+        <div>
+            <p>工事中</p>
+        </div>
+        <p>{{ post.body }}</p>
+    </div>
+    <hr>
+    <!--投稿フォーム-->
+    <div class="container">
+        <p class="display-6 fw-bold">コメントする</p>
+        <div>
+            <form action="#">
+                <label class="form-label" for="xxx">名前</label>
+                <input class="form-control" type="text" name="xxx">
+                <label class="form-label" for="">内容</label>
+                <input class="form-control" type="textarea" name="#" id="" raws="3">
+                <input class="btn btn-primary" type="submit" value="投稿する">
+            </form>
+        </div>
+
+    </div>
+    <!--コメントリスト-->
+    <div class="container">
+        <p class="display-6 fw-bold">コメント一覧</p>
+        <div>
+            <p>投稿者名：</p>
+            <p>内容：</p>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
