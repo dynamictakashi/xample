@@ -4,8 +4,11 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from werkzeug.security import check_password_hash, generate_password_hash  # 乱数生成用モジュール
 import random
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.declarative import declarative_base  # 引数"Base"の設定に必要
 import datetime  # 現在時刻を投稿するためのモジュール
+from sqlalchemy.orm import relationship  # 外部キー設定用のモジュール
 
+# 初期設定用の定義
 app = Flask(__name__)
 app.debug = True
 app.config['DEBUG'] = True
@@ -14,6 +17,7 @@ app.config['SECRET_KEY'] = 'secretkey'
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
+Base = declarative_base()  # DBの親子関係に使用
 
 
 # DB - ログインユーザー
@@ -31,6 +35,9 @@ class User(UserMixin, db.Model):
 
 # DB - ブログエントリー
 class Post(db.Model):
+    __tablename__ = 'post'
+    children = relationship("Comment", backref="comment")
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(50), nullable=False)
     body = db.Column(db.String(500), nullable=False)
@@ -41,6 +48,18 @@ class Post(db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+
+# DB - コメント
+class Comment(db.Model):
+    __tablename__ = 'comment'
+
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), primary_key=True)
+    id = db.Column(db.Integer, unique=True)
+    name = db.Column(db.String(30), nullable=False)
+    body = db.Column(db.String(500), nullable=False)
+    time = db.Column(db.DateTime)
+
 
 
 @login_manager.user_loader
@@ -149,9 +168,8 @@ def blog_content(id):
     post = Post.query.get(id)
     return render_template('blog_content.html', post=post)
 
+
 # ブログ投稿
-
-
 @app.route('/newpost', methods=['GET', 'POST'])
 @login_required
 def blog_post():
@@ -202,8 +220,5 @@ def blog_delete(id):
 
 # コメント
 
+
 # コメント表示
-
-# コメントDB
-
-# お気に入り
