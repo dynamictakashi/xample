@@ -164,8 +164,9 @@ def blog():
 @app.route('/blog/<int:id>', methods=['GET','POST'])
 def blog_content(id):
     post = Post.query.get(id)
-    comments = Comment.query.all()
+    comments = Comment.query.filter_by(post_id=int(id)).all()
     if request.method=='GET':
+        print(2)
         return render_template('blog_content.html', post=post,comments=comments)
     else:   #コメント機能
         name = request.form['com_name']

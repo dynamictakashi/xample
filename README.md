@@ -1,17 +1,19 @@
 example for a plactice that create an application by Flask.
-Todo...!?
-DBの再構築
-BBSの再実装
-ログイン機能の再実装
-DBその1:主題管理
-DBその2:コメント管理
-DBその3:ユーザー管理
+
+Todo...
+バグったhtmlを修復する
+
 
 完了:
 ユーザー作成,
 ログイン機能,
 ログアウト機能,
 編集
+DBその1:主題管理
+DBその2:コメント管理
+DBその3:ユーザー管理
+DBの再構築
+BBSの再実装
 
 dadadadada
 
