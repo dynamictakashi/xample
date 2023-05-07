@@ -1,7 +1,18 @@
 example for a plactice that create an application by Flask.
 
 Todo...
-バグったhtmlを修復する
+DB作成する
+Pyに追加scr書く
+htmlに追加ボタンつける
+追加ボタンを押してdbに追加されるか確認
+削除ボタンも追加する
+
+DB側
+class Favorite(db.Model):
+id = db.Column(db.Integer, primary_key=True)
+user_id = db.Column(ForeignKey=User.user_id)
+post_title = db.Column(ForeignKey(Post.Post_title))
+time = db.Column(db.DateTime)
 
 
 完了:
@@ -14,6 +25,7 @@ DBその2:コメント管理
 DBその3:ユーザー管理
 DBの再構築
 BBSの再実装
+html修復(vh-100になってたせい)
 
 dadadadada
 
