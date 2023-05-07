@@ -7,7 +7,7 @@
 <li class="nav-item"><a href="/login" class="nav-link active">login</a></li>
 {%endblock%}
 
-{% block content %}
+{%block content%}
 <div class="vh-100 vw-100 bg-image justify-content-center">
     <div class="container">
         <div class="d-flex">
@@ -24,11 +24,11 @@
     <div class="container">
         <p class="display-6 fw-bold">コメントする</p>
         <div>
-            <form action="#">
-                <label class="form-label" for="xxx">名前</label>
-                <input class="form-control" type="text" name="xxx">
-                <label class="form-label" for="">内容</label>
-                <input class="form-control" type="textarea" name="#" id="" raws="3">
+            <form action="/blog/{{post.id}}" method="POST">
+                <label class="form-label" for="com_name">名前</label>
+                <input class="form-control" type="text" name="com_name">
+                <label class="form-label" for="com_body">内容</label>
+                <input class="form-control" type="textarea" name="com_body" raws="3">
                 <input class="btn btn-primary" type="submit" value="投稿する">
             </form>
         </div>
@@ -37,11 +37,18 @@
     <!--コメントリスト-->
     <div class="container">
         <p class="display-6 fw-bold">コメント一覧</p>
-        <div>
-            <p>投稿者名：</p>
-            <p>内容：</p>
-        </div>
+        {%for comment in comments%}
+        <div class="container">
 
+            <div class="d-flex">
+                <p>投稿者名: {{comment.name}}</p>
+                <p>投稿時刻: {{comment.time}}</p>
+            </div>
+            <div>
+                <p>内容：{{comment.body}}</p>
+            </div>
+        </div>
+        {%endfor%}
     </div>
 </div>
-{% endblock %}
+{%endblock%}

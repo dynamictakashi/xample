@@ -53,13 +53,11 @@ class Post(db.Model):
 # DB - コメント
 class Comment(db.Model):
     __tablename__ = 'comment'
-
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), primary_key=True)
-    id = db.Column(db.Integer, unique=True)
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
     name = db.Column(db.String(30), nullable=False)
     body = db.Column(db.String(500), nullable=False)
     time = db.Column(db.DateTime)
-
 
 
 @login_manager.user_loader
@@ -163,10 +161,20 @@ def blog():
 
 
 # ブログ詳細画面
-@app.route('/blog/<int:id>', methods=['GET'])
+@app.route('/blog/<int:id>', methods=['GET','POST'])
 def blog_content(id):
     post = Post.query.get(id)
-    return render_template('blog_content.html', post=post)
+    comments = Comment.query.all()
+    if request.method=='GET':
+        return render_template('blog_content.html', post=post,comments=comments)
+    else:   #コメント機能
+        name = request.form['com_name']
+        body = request.form['com_body']
+        time = datetime.datetime.now()  # 時間
+        comment = Comment(post_id=id,name=name, body=body, time=time)
+        db.session.add(comment)
+        db.session.commit()
+        return render_template('blog_content.html', post=post,comments=comments)
 
 
 # ブログ投稿
@@ -218,7 +226,6 @@ def blog_delete(id):
     return redirect(url_for('blog'))
 
 
-# コメント
-
+# コメント投稿(統合しました)
 
 # コメント表示
