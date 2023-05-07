@@ -1,5 +1,5 @@
 example for a plactice that create an application by Flask.
-Todo...
+Todo...!?
 DBの再構築
 BBSの再実装
 ログイン機能の再実装
