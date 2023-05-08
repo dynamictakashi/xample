@@ -261,7 +261,6 @@ def blog_favorite(id):
         post = Post.query.get(id)  # DBを参照する
         res = Favorite.query.filter_by(name=logged, title_no=2).all()
         if res:
-            print('already registered')
             return redirect(url_for('blog'))
         else:
             set1 = user.user_id
@@ -272,7 +271,6 @@ def blog_favorite(id):
                               title=set3, time=set4)
             db.session.add(tsuika)
             db.session.commit()
-            print('registering has not been yet.')
             return redirect(url_for('blog'))
             
 
@@ -284,7 +282,7 @@ def favorite_list():
         setting = current_user.get_id()  # ログインユーザーの把握
         user = User.query.get(setting)  # レコードの取得
         logged = user.user_id
-        favorites = Favorite.query.filter_by(name=logged, title_no=2).all()
+        favorites = Favorite.query.filter_by(name=logged).all()
         return render_template('favorite.html', logged=logged,favorites=favorites)
 
 # お気に入り削除
