@@ -300,3 +300,5 @@ def favorite_delete(id):
         db.session.delete(record)
         db.session.commit()
         return redirect('/favorite')
+    else:
+        return redirect('/facorite')
