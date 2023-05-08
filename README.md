@@ -1,12 +1,16 @@
 example for a plactice that create an application by Flask.
+
 Todo...
+
 コメント欄のDDos対策
 ヘッダ補足
 
 各種セキュリティ対策
 リンクとページレイアウト
 
+
 完了:
+
 ユーザー作成,
 ログイン機能,
 ログアウト機能,
