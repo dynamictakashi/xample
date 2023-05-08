@@ -19,11 +19,16 @@
             <th scope="col">
                 <p>記事のタイトル</p>
             </th>
+            <th scope="col">
+                <p>削除</p>
+                
+            </th>
         </tr>
         {%for favorite in favorites%}
         <tr>
             <td>{{loop.index}}</td>
             <td><a href="/blog/{{favorite.title_no}}">{{favorite.title}}</a></td>
+            <td><a class="btn btn-primary" href="/favorite/delete/{{favorite.title_no}}">削除</a></td>
         </tr>
         {% endfor %}
     </table>

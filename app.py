@@ -272,27 +272,31 @@ def blog_favorite(id):
             db.session.add(tsuika)
             db.session.commit()
             return redirect(url_for('blog'))
-            
+
 
 # お気に入り閲覧
 @app.route('/favorite', methods=['GET', 'POST'])
 @login_required
-def favorite_list():
+def favorite_manage():
     if request.method == 'GET':
         setting = current_user.get_id()  # ログインユーザーの把握
         user = User.query.get(setting)  # レコードの取得
         logged = user.user_id
         favorites = Favorite.query.filter_by(name=logged).all()
-        return render_template('favorite.html', logged=logged,favorites=favorites)
+        return render_template('favorite.html', logged=logged, favorites=favorites)
+    else:
+        return redirect(url_for('/blog'))
+
 
 # お気に入り削除
-
-
 @app.route('/favorite/delete/<int:id>', methods=['GET'])
 @login_required
 def favorite_delete(id):
-    record = Favorite.query.get(id)  # レコードを取得
-    if request.method == 'GET':
+    setting = current_user.get_id()  # ログインユーザーの把握
+    user = User.query.get(setting)  # レコードの取得
+    logged = user.user_id
+    record = Favorite.query.filter_by(name=logged,title_no=id).first()  # レコードを取得
+    if request.method=='GET':
         db.session.delete(record)
         db.session.commit()
-    return redirect('/blog')
+        return redirect('/favorite')
