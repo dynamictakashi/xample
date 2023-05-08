@@ -22,9 +22,9 @@ Base = declarative_base()  # DBの親子関係に使用
 
 # DB - ログインユーザー
 class User(UserMixin, db.Model):
-    #__tablename__で子テーブルを設定してあげる
+    # __tablename__で子テーブルを設定してあげる
     __tablename__ = 'user'
-    #以下は既存情報
+    # 以下は既存情報
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.String(64), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
@@ -42,7 +42,7 @@ class User(UserMixin, db.Model):
 # DB - ブログエントリー
 class Post(db.Model):
     __tablename__ = 'post'
-    #ここにFavoriteテーブルの設定を入れる
+    # ここにFavoriteテーブルの設定を入れる
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(50), nullable=False)
@@ -66,18 +66,20 @@ class Comment(db.Model):
     time = db.Column(db.DateTime)
 
 # DB - お気に入り
-class Favorite(db.Model): #子テーブルになる、親はuserとpost
+
+
+class Favorite(db.Model):  # 子テーブルになる、親はuserとpost
     __tablename__ = 'favorite'
 
     id = db.Column(db.Integer, primary_key=True)
-    name=db.Column(db.String, db.ForeignKey('user.user_id'))
-    #ここに記事noを追加しないと不便になる
-
-    title=db.Column(db.String, db.ForeignKey('post.title'))
+    name = db.Column(db.String, db.ForeignKey('user.user_id'))
+    title_no = db.Column(db.Integer, db.ForeignKey('post.id'))
+    title = db.Column(db.String, db.ForeignKey('post.title'))
     time = db.Column(db.DateTime)
     __table_args__ = (
-        db.UniqueConstraint('name', 'title'),
+        db.UniqueConstraint('name', 'title_no'),
     )
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -173,9 +175,9 @@ def logout():
 
 
 # ブログメイン画面
-@app.route('/blog', methods=['GET','POST'])
+@app.route('/blog', methods=['GET', 'POST'])
 def blog():
-    if request.method =='GET':
+    if request.method == 'GET':
         posts = Post.query.all()
         return render_template('blog.html', posts=posts)
 
@@ -252,19 +254,26 @@ def blog_delete(id):
 # コメント表示(統合しました)
 
 
-#お気に入り機能(ブログ一覧に移動)
+# お気に入り機能(ブログ一覧に移動)
 @app.route('/favorite/<int:id>', methods=['GET'])
 @login_required
 def blog_favorite(id):
-    set3=datetime.datetime.now
-    if request.method =='GET' and current_user.is_authenticated:
-        setting=current_user.get_id() #ログインユーザーの把握
-        user=User.query.get(setting) #レコードの取得
-        set1=user.user_id
-        print(set1) #ログインIDを取得
-        set2=Post.query.get(id) #DBを参照する
-        set3=datetime.datetime.now()
-        tsuika = Favorite(name=set1, title=set2.title, time=set3)
-        db.session.add(tsuika)
-        db.session.commit()
-        return redirect('/blog')
+    set3 = datetime.datetime.now
+    if request.method == 'GET' and current_user.is_authenticated:
+        setting = current_user.get_id()  # ログインユーザーの把握
+        user = User.query.get(setting)  # レコードの取得
+        post = Post.query.get(id)  # DBを参照する
+        res = Favorite.query.filter_by(name=setting, title_no=id).all()
+        if res is not None:
+            return redirect('/blog')
+        else:
+            set1 = user.user_id
+            set2 = int(post.id)
+            set3 = post.title  # DBを参照する
+            set4 = datetime.datetime.now()
+            tsuika = Favorite(name=set1, title_no=set2,
+            title=set3, time=set4)
+            db.session.add(tsuika)
+            db.session.commit()
+            print(res)
+            return redirect('/blog')
