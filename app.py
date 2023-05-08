@@ -71,10 +71,13 @@ class Favorite(db.Model): #子テーブルになる、親はuserとpost
 
     id = db.Column(db.Integer, primary_key=True)
     name=db.Column(db.String, db.ForeignKey('user.user_id'))
+    #ここに記事noを追加しないと不便になる
+
     title=db.Column(db.String, db.ForeignKey('post.title'))
     time = db.Column(db.DateTime)
-
-
+    __table_args__ = (
+        db.UniqueConstraint('name', 'title'),
+    )
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -265,86 +268,3 @@ def blog_favorite(id):
         db.session.add(tsuika)
         db.session.commit()
         return redirect('/blog')
-
-#要は#3の記事のお気に入りを押したらユーザー2のお気に入りが追加されれば良い
-#titleとusernameだけで良い。
-#usernameはloginの関数使えば良い
-#titleはPostからidを指定してあげれば良い
-#request.query.get('カラム')
-
-
-'''お気に入り機能
-提案
-@qpp.route('/favorites)
-ログイン状態のユーザーのみが実行可能
-@login_required
-HTML側のボタンが押されたら、そのコメントの内容を取得してDBへ登録
-/favoritesにお気に入りDBの内容を表示する
-return render_template('favorites.html')
-お気に入りDBはお気に入りの内容をユーザーごとに区別できるようにする
-favorites = Favorite.query.filter_by(logged=user_id).all()
-ユーザーのIDとお気に入りDBを紐づける（外部キーとする）
-user_id:takashiが2だとして、user_id:2,記事id=5,お気に入り...
-
-1./blog/favoritesでお気に入り一覧を閲覧できる
-2.favoritesから各種お気に入りに飛べる
-1=id(主キー),2=ユーザーID(外部キー),3=記事id(外部キー),4=コメントid(外部キー)
-
-とりあえず記事のfavで運用するので…
-1と2と3のみを行う。
-取得すべきはユーザーidと記事id
----
-取得するには・・・
-DB.query.get(id)←これはidと紐づいた内容を指定する。
-DB.query.filter_by().all()←filter_byで指定したものだけを抽出する。
-id, user_name, entry
-1 takashi 3
-2 takashi 1
-3 takashi 8
-4 takashi 13
-5 test 3
-6 test 6
-7 test 15
-8 test 11
-9 test 4
-
-どっから引っ張ってくるかメモる
-UserとPostから引っ張る。つまりUserとPostを親にする。
-おそらくPostはすでに親として機能している、そこでさっきの複数外部キーを設定する必要がある。
-Favテーブル作成、idと記事番号を引っ張る
-コメントとユーザーを親にする
-
-おそらくdbの設定はこれでいける
----
-お次は実装
-HTNL側に表示させるのはuser_idを指定するのみ。
-
-current_user.get_id()でlogged_userのidを取得できる
-ユーザー名を追加するには・・・
-xxx = current_user.get_id() #idを取得
-user=User.query.get(xxx) #xxxにidが入っている
-user_id=user.user_id →takashi
-そもそもこれをdbに登録する。だからuser.user_idで良いのでは
-
-追加ボタンのバックエンド
-postで抽出
-yyy = current_user.get_id()
-zzz = Post.query.get()
-xxx = Favorite(id=id, user_id=yyy, post_titlepost_title)
-db.session.add(xxx)
-db.session.commit
-
-postで1,takashi,これはテストきじ1です
-
-つまり
-logged_id= current_user.get_id()
-xxx=Favorite.query.get(logged_id)
-yyy=query.get(xxx.post_id)
-render_template('favorite.html',xxx=xxx)
-
-<td>
-{{xxx.post_id}}
-</td>
-
----
-'''
