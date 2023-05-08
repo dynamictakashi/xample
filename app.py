@@ -253,13 +253,12 @@ def blog_delete(id):
 @app.route('/favorite/<int:id>', methods=['GET'])
 @login_required
 def blog_favorite(id):
-    set3 = datetime.datetime.now
     if request.method == 'GET' and current_user.is_authenticated:
         setting = current_user.get_id()  # ログインユーザーの把握
         user = User.query.get(setting)  # レコードの取得
         logged = user.user_id
         post = Post.query.get(id)  # DBを参照する
-        res = Favorite.query.filter_by(name=logged, title_no=2).all()
+        res = Favorite.query.filter_by(name=logged, title_no=id).all()
         if res:
             return redirect(url_for('blog'))
         else:
@@ -267,8 +266,7 @@ def blog_favorite(id):
             set2 = int(post.id)
             set3 = post.title  # DBを参照する
             set4 = datetime.datetime.now()
-            tsuika = Favorite(name=set1, title_no=set2,
-                              title=set3, time=set4)
+            tsuika = Favorite(name=set1, title_no=set2, title=set3, time=set4)
             db.session.add(tsuika)
             db.session.commit()
             return redirect(url_for('blog'))
@@ -295,8 +293,9 @@ def favorite_delete(id):
     setting = current_user.get_id()  # ログインユーザーの把握
     user = User.query.get(setting)  # レコードの取得
     logged = user.user_id
-    record = Favorite.query.filter_by(name=logged,title_no=id).first()  # レコードを取得
-    if request.method=='GET':
+    record = Favorite.query.filter_by(
+        name=logged, title_no=id).first()  # レコードを取得
+    if request.method == 'GET':
         db.session.delete(record)
         db.session.commit()
         return redirect('/favorite')
