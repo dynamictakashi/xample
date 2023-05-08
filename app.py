@@ -249,12 +249,7 @@ def blog_delete(id):
     return redirect(url_for('blog'))
 
 
-# コメント投稿(統合しました)
-
-# コメント表示(統合しました)
-
-
-# お気に入り機能(ブログ一覧に移動)
+# お気に入り機能
 @app.route('/favorite/<int:id>', methods=['GET'])
 @login_required
 def blog_favorite(id):
@@ -262,18 +257,44 @@ def blog_favorite(id):
     if request.method == 'GET' and current_user.is_authenticated:
         setting = current_user.get_id()  # ログインユーザーの把握
         user = User.query.get(setting)  # レコードの取得
+        logged = user.user_id
         post = Post.query.get(id)  # DBを参照する
-        res = Favorite.query.filter_by(name=setting, title_no=id).all()
-        if res is not None:
-            return redirect('/blog')
+        res = Favorite.query.filter_by(name=logged, title_no=2).all()
+        if res:
+            print('already registered')
+            return redirect(url_for('blog'))
         else:
             set1 = user.user_id
             set2 = int(post.id)
             set3 = post.title  # DBを参照する
             set4 = datetime.datetime.now()
             tsuika = Favorite(name=set1, title_no=set2,
-            title=set3, time=set4)
+                              title=set3, time=set4)
             db.session.add(tsuika)
             db.session.commit()
-            print(res)
-            return redirect('/blog')
+            print('registering has not been yet.')
+            return redirect(url_for('blog'))
+            
+
+# お気に入り閲覧
+@app.route('/favorite', methods=['GET', 'POST'])
+@login_required
+def favorite_list():
+    if request.method == 'GET':
+        setting = current_user.get_id()  # ログインユーザーの把握
+        user = User.query.get(setting)  # レコードの取得
+        logged = user.user_id
+        favorites = Favorite.query.filter_by(name=logged, title_no=2).all()
+        return render_template('favorite.html', logged=logged,favorites=favorites)
+
+# お気に入り削除
+
+
+@app.route('/favorite/delete/<int:id>', methods=['GET'])
+@login_required
+def favorite_delete(id):
+    record = Favorite.query.get(id)  # レコードを取得
+    if request.method == 'GET':
+        db.session.delete(record)
+        db.session.commit()
+    return redirect('/blog')
