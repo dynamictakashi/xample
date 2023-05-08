@@ -14,6 +14,10 @@ user_id = db.Column(ForeignKey=User.user_id)
 post_title = db.Column(ForeignKey(Post.Post_title))
 time = db.Column(db.DateTime)
 
+py側
+とりあえずDBを正しく呼び出す
+ログインユーザーIDで抽出する
+
 
 完了:
 ユーザー作成,
