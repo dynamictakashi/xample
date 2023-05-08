@@ -69,7 +69,7 @@ class Comment(db.Model):
 class Favorite(db.Model): #子テーブルになる、親はuserとpost
     __tablename__ = 'favorite'
 
-    id=db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name=db.Column(db.String, db.ForeignKey('user.user_id'))
     title=db.Column(db.String, db.ForeignKey('post.title'))
     time = db.Column(db.DateTime)
@@ -264,7 +264,7 @@ def blog_favorite(id):
         tsuika = Favorite(name=set1, title=set2.title, time=set3)
         db.session.add(tsuika)
         db.session.commit()
-        return render_template('blog.html')
+        return redirect('/blog')
 
 #要は#3の記事のお気に入りを押したらユーザー2のお気に入りが追加されれば良い
 #titleとusernameだけで良い。
