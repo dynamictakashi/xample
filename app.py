@@ -119,8 +119,8 @@ def db_find():
     if request.method == 'POST':
         id = request.form.get('id')  # HTMLと連携、HTMLから数値取得
         found = User.query.get(id)  # 変数からDB取得
-        username = found.username  # 変数からDBカラムを持ってくる
-        email = found.email  # 同じくカラム持ってくる
+        username = found.user_id  # 変数からDBカラムを持ってくる
+        email = found.password  # 同じくカラム持ってくる
         result = 'enable'  # ダミー用関数
         return render_template('find.html', result=result, username=username, email=email)
     else:
@@ -249,7 +249,7 @@ def blog_delete(id):
     return redirect(url_for('blog'))
 
 
-# お気に入り機能
+# お気に入り追加
 @app.route('/favorite/<int:id>', methods=['GET'])
 @login_required
 def blog_favorite(id):
