@@ -1,2 +1,8 @@
-Flask
-Gunicorn
+flask
+flask_login
+werkzeug
+random
+flask_sqlalchemy
+sqlalchemy
+datetime
+gunicorn
