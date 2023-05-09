@@ -156,6 +156,7 @@ def signup():
 # ログイン
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    base_login=True
     if request.method == 'POST':
         user_id = request.form['user_id']
         password = request.form['password']
@@ -163,7 +164,7 @@ def login():
         if user and check_password_hash(user.password, password):
             login_user(user)
             return redirect(url_for('index'))
-    return render_template('login.html')
+    return render_template('login.html',base_login=base_login)
 
 
 # ログアウト
@@ -204,14 +205,16 @@ def blog_content(id):
 @app.route('/newpost', methods=['GET', 'POST'])
 @login_required
 def blog_post():
+    base_post = True
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['body']
         time = datetime.datetime.now()  # 時間
+
         posted = Post(title=title, body=body, time=time)
         db.session.add(posted)
         db.session.commit()
-    return render_template('newpost.html')
+    return render_template('newpost.html',base_post=base_post)
 
 # 編集
 @app.route('/postedit/<int:id>', methods=['GET', 'POST'])
@@ -268,11 +271,12 @@ def blog_favorite(id):
 @login_required
 def favorite_manage():
     if request.method == 'GET':
+        base_favorite=True
         setting = current_user.get_id()  # ログインユーザーの把握
         user = User.query.get(setting)  # レコードの取得
         logged = user.user_id
         favorites = Favorite.query.filter_by(name=logged).all()
-        return render_template('favorite.html', logged=logged, favorites=favorites)
+        return render_template('favorite.html', logged=logged, favorites=favorites,base_favorite=base_favorite)
     else:
         return redirect(url_for('/blog'))
 
