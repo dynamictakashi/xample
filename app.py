@@ -171,7 +171,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return render_template('home.html')
+    return redirect(url_for('index'))
 
 
 # ブログメイン画面
@@ -274,7 +274,6 @@ def blog_favorite(id):
 
 # お気に入り閲覧
 @app.route('/favorite', methods=['GET', 'POST'])
-@login_required
 def favorite_manage():
     if request.method == 'GET':
         setting = current_user.get_id()  # ログインユーザーの把握

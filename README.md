@@ -4,6 +4,19 @@ Todo...
 
 コメント欄のDDos対策
 ヘッダ補足
+ブログ画面のファボボタンをログイン中のみ表示する
+logged →全部表示
+else:ログインのみ
+%authenificated
+    %block header
+%else
+    login
+%endif
+
+ヘッダの種類
+暫定的にblog,toolsの2種類とする
+新規でtoolsページを作成する。
+toolsはforループで並べる
 
 各種セキュリティ対策
 リンクとページレイアウト

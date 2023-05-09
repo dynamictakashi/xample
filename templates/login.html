@@ -1,15 +1,16 @@
 {% extends 'base.html' %}
 {%block header%}
-<li class="nav-item"><a href="/" class="nav-link">Home</a></li>
-<li class="nav-item"><a href="/triangle" class="nav-link">RSP</a></li>
-<li class="nav-item"><a href="/signup" class="nav-link">reg</a></li>
-<li class="nav-item"><a href="/find" class="nav-link">find</a></li>
-<li class="nav-item"><a href="/login" class="nav-link active">login</a></li>
+<li class="nav-item"><a href="/home" class="nav-link active"></a></li>
+<li class="nav-item"><a href="/blog" class="nav-link">Blog</a></li>
+<li class="nav-item"><a href="/tools" class="nav-link disabled">Tools</a></li>
 {%endblock%}
 
 {% block content %}
 <div class="vh-100 vw-100 bg-image justify-content-center">
-    <div class="container vw-100">
+    <div class="container vw-100"> 
+        {%if current_user.is_authenticated %}
+        <p>既にログイン中です。</p>
+        {%else%}
     <h1>ログイン</h1>
         <form method="POST" action="/login">
             <div class="form-group">
@@ -22,6 +23,7 @@
             </div>
             <button type="submit" class="btn btn-primary">ログイン</button>
         </form>
+        {%endif%}
     </div>
 </div>
 {% endblock %}
