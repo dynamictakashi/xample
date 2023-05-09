@@ -213,15 +213,6 @@ def blog_post():
         db.session.commit()
     return render_template('newpost.html')
 
-
-'''
-DBに保存するメソッド
-----
-htmlで書いたものを送信する→受け取る→DBに保存
-DBに保存された内容を取得する→表示する
-'''
-
-
 # 編集
 @app.route('/postedit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -274,6 +265,7 @@ def blog_favorite(id):
 
 # お気に入り閲覧
 @app.route('/favorite', methods=['GET', 'POST'])
+@login_required
 def favorite_manage():
     if request.method == 'GET':
         setting = current_user.get_id()  # ログインユーザーの把握
@@ -299,4 +291,4 @@ def favorite_delete(id):
         db.session.commit()
         return redirect('/favorite')
     else:
-        return redirect('/facorite')
+        return redirect('/favorite')
