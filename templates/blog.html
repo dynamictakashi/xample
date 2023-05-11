@@ -6,22 +6,30 @@
 <div class="vw-100 bg-image justify-content-center" style="min-height:100vh;">
     {%for post in posts%}
     <div class="container mb-3 card shadow" style="min-height:25vh; max-width:90vw;">
-        <div class="container">
-            <div class="m-2 h1 fw-bold card-title"><a href="/blog/{{post.id}}">{{ post.title}}</a></div>
-            <div class="d-flex">
-                <div class="text-muted">{{ post.time }}</div>
-                <div>
-                    {% if current_user.is_authenticated %}
-                    <a class="btn btn-primary" type="submit" href="/postedit/{{post.id}}" method="POST"><i class="bi bi-pen"></i></a>
-                    <a class="btn btn-primary" type="submit" href="/delete/{{post.id}}" method="POST"><i class="bi bi-trash3"></i></a>
-                    <a class="btn btn-primary" type="submit" href="/favorite/{{post.id}}" method="POST"><i class="bi bi-suit-heart-fill"></i></a>
-                    {%endif%}
-                </div>
+        <div class="container d-flex m-2">
+            <div>
+                <h1 class="card-title fw-bold"><a href="/blog/{{post.id}}">{{ post.title}}</a></h1>
+                <p class="text-muted">{{ post.time }}</p>
             </div>
+
+            <div class="justify-content-end">
+                {% if current_user.is_authenticated %}
+                <a class="btn btn-primary m-1" type="submit" href="/postedit/{{post.id}}" method="POST"><i
+                        class="bi bi-pen"></i></a>
+                <a class="btn btn-primary m-1" type="submit" href="/delete/{{post.id}}" method="POST"><i
+                        class="bi bi-trash3 m-1"></i></a>
+                <a class="btn btn-primary" type="submit" href="/favorite/{{post.id}}" method="POST"><i
+                        class="bi bi-suit-heart-fill"></i></a>
+                {%endif%}
+            </div>
+
         </div>
         <hr class="hr">
-        <p class="card-body">{{ post.body }}</p>
+        <div class="card-body">
+            <p>{{ post.body }}</p>
+        </div>
     </div>
     {% endfor %}
+</div>
 </div>
 {% endblock %}
