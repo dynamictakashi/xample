@@ -81,6 +81,17 @@ class Favorite(db.Model):  # 子テーブルになる、親はuserとpost
     )
 
 
+# よく使う関数
+
+# 1.ユーザー名を取得する
+def summon_user():
+    setting_logged_user = current_user.get_id()  # ログインユーザーの把握
+    user = User.query.get(setting_logged_user)  # レコードの取得
+    summon = user.user_id
+    return summon
+
+
+#これはoften defに関係なし
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -89,9 +100,184 @@ def load_user(user_id):
 # ベース
 @app.route('/')
 def index():
-    return render_template('home.html')
+    base_home = True
+    return render_template('home.html',base_home=base_home)
 
 
+
+#ここからページ集
+
+# 登録
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        user_id = request.form['user_id']
+        password = request.form['password']
+        user = User.query.filter_by(user_id=user_id).first()
+        if user:
+            error = 'このユーザーIDは既に使用されています。'
+            return render_template('signup.html', error=error)
+        password_hash = generate_password_hash(password, method='sha256')
+        new_user = User(user_id=user_id, password=password_hash)
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('index'))
+    return render_template('signup.html')
+
+
+# ログイン
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    base_login = True
+    if request.method == 'POST':
+        user_id = request.form['user_id']
+        password = request.form['password']
+        user = User.query.filter_by(user_id=user_id).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('index'))
+    return render_template('login.html', base_login=base_login)
+
+
+# ログアウト
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+
+# ブログメイン画面
+@app.route('/blog', methods=['GET', 'POST'])
+def blog():
+    if request.method == 'GET':
+        base_blog=True
+        posts = Post.query.all()
+    return render_template('blog.html',posts=posts,base_blog=base_blog)
+
+
+# ブログ詳細画面
+@app.route('/blog/<int:id>', methods=['GET', 'POST'])
+def blog_content(id):
+    base_blog=True
+    post = Post.query.get(id)
+    comments = Comment.query.filter_by(post_id=int(id)).all()
+    if request.method == 'GET':
+        return render_template('blog_content.html', post=post, comments=comments,base_blog=base_blog)
+    else:  # コメント機能
+        name = request.form['com_name']
+        body = request.form['com_body']
+        time = datetime.datetime.now()  # 時間
+        comment = Comment(post_id=id, name=name, body=body, time=time)
+        db.session.add(comment)
+        db.session.commit()
+        return render_template('blog_content.html', post=post, comments=comments)
+
+
+# ブログ投稿
+@app.route('/newpost', methods=['GET', 'POST'])
+@login_required
+def blog_post():
+    base_post = True
+    if request.method == 'POST':
+        title = request.form['title']
+        body = request.form['body']
+        time = datetime.datetime.now()  # 時間
+
+        posted = Post(title=title, body=body, time=time)
+        db.session.add(posted)
+        db.session.commit()
+    return render_template('newpost.html', base_post=base_post)
+
+# 編集
+
+
+@app.route('/postedit/<int:id>', methods=['GET', 'POST'])
+@login_required
+def blog_edit(id):
+    base_blog=True
+    post = Post.query.get(id)
+    if request.method == 'GET':
+        return render_template('postedit.html', post=post, base_blog=base_blog)
+    else:
+        post.title = request.form['title']
+        post.body = request.form['body']
+        post.time = datetime.datetime.now()
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('blog'))
+
+
+# 削除
+@app.route('/delete/<int:id>', methods=['GET'])
+@login_required
+def blog_delete(id):
+    post = Post.query.get(id)
+    if request.method == 'GET':
+        db.session.delete(post)
+        db.session.commit()
+    return redirect(url_for('blog'))
+
+
+# お気に入り閲覧
+@app.route('/favorite', methods=['GET', 'POST'])
+@login_required
+def favorite_manage():
+    if request.method == 'GET':
+        base_fav = True
+        logged = summon_user()
+        favorites = Favorite.query.filter_by(name=logged).all()
+        return render_template('favorite.html', logged=logged, favorites=favorites,base_fav=base_fav)
+    else:
+        return redirect(url_for('/blog'))
+
+
+# お気に入り追加
+@app.route('/favorite/<int:id>', methods=['GET'])
+@login_required
+def blog_favorite(id):
+    if request.method == 'GET' and current_user.is_authenticated:
+        setting = current_user.get_id()  # ログインユーザーの把握
+        user = User.query.get(setting)  # レコードの取得
+        logged = user.user_id
+        post = Post.query.get(id)  # DBを参照する
+        res = Favorite.query.filter_by(name=logged, title_no=id).all()
+        if res:
+            return redirect(url_for('blog'))
+        else:
+            set1 = user.user_id
+            set2 = int(post.id)
+            set3 = post.title  # DBを参照する
+            set4 = datetime.datetime.now()
+            tsuika = Favorite(name=set1, title_no=set2, title=set3, time=set4)
+            db.session.add(tsuika)
+            db.session.commit()
+            return redirect(url_for('blog'))
+
+# お気に入り削除
+
+
+@app.route('/favorite/delete/<int:id>', methods=['GET'])
+@login_required
+def favorite_delete(id):
+    logged = summon_user()
+    record = Favorite.query.filter_by(
+        name=logged, title_no=id).first()  # レコードを取得
+    if request.method == 'GET':
+        db.session.delete(record)
+        db.session.commit()
+        return redirect('/favorite')
+    else:
+        return redirect('/favorite')
+
+    '''
+    #関数メモfor add fav
+        base_favorite=True
+        setting = current_user.get_id()  # ログインユーザーの把握
+        user = User.query.get(setting)  # レコードの取得
+        '''
+    
+#昔遊びで作った機能集
 # ジャンケン
 @app.route('/triangle', methods=['GET', 'POST'])
 @login_required
@@ -131,168 +317,3 @@ def db_find():
 @app.route('/sandbox', methods=['GET', 'POST'])
 def sunaba():
     return render_template('sandbox.html')
-
-# ここから本格的に作成する。
-
-
-# 登録
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if request.method == 'POST':
-        user_id = request.form['user_id']
-        password = request.form['password']
-        user = User.query.filter_by(user_id=user_id).first()
-        if user:
-            error = 'このユーザーIDは既に使用されています。'
-            return render_template('signup.html', error=error)
-        password_hash = generate_password_hash(password, method='sha256')
-        new_user = User(user_id=user_id, password=password_hash)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('index'))
-    return render_template('signup.html')
-
-
-# ログイン
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    base_login=True
-    if request.method == 'POST':
-        user_id = request.form['user_id']
-        password = request.form['password']
-        user = User.query.filter_by(user_id=user_id).first()
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            return redirect(url_for('index'))
-    return render_template('login.html',base_login=base_login)
-
-
-# ログアウト
-@app.route('/logout', methods=['GET', 'POST'])
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('index'))
-
-
-# ブログメイン画面
-@app.route('/blog', methods=['GET', 'POST'])
-def blog():
-    if request.method == 'GET':
-        posts = Post.query.all()
-        return render_template('blog.html', posts=posts)
-
-
-# ブログ詳細画面
-@app.route('/blog/<int:id>', methods=['GET', 'POST'])
-def blog_content(id):
-    post = Post.query.get(id)
-    comments = Comment.query.filter_by(post_id=int(id)).all()
-    if request.method == 'GET':
-        print(2)
-        return render_template('blog_content.html', post=post, comments=comments)
-    else:  # コメント機能
-        name = request.form['com_name']
-        body = request.form['com_body']
-        time = datetime.datetime.now()  # 時間
-        comment = Comment(post_id=id, name=name, body=body, time=time)
-        db.session.add(comment)
-        db.session.commit()
-        return render_template('blog_content.html', post=post, comments=comments)
-
-
-# ブログ投稿
-@app.route('/newpost', methods=['GET', 'POST'])
-@login_required
-def blog_post():
-    base_post = True
-    if request.method == 'POST':
-        title = request.form['title']
-        body = request.form['body']
-        time = datetime.datetime.now()  # 時間
-
-        posted = Post(title=title, body=body, time=time)
-        db.session.add(posted)
-        db.session.commit()
-    return render_template('newpost.html',base_post=base_post)
-
-# 編集
-@app.route('/postedit/<int:id>', methods=['GET', 'POST'])
-@login_required
-def blog_edit(id):
-    post = Post.query.get(id)
-    if request.method == 'GET':
-        return render_template('postedit.html', post=post)
-    else:
-        post.title = request.form['title']
-        post.body = request.form['body']
-        post.time = datetime.datetime.now()
-        db.session.add(post)
-        db.session.commit()
-        return redirect(url_for('blog'))
-
-
-# 削除
-@app.route('/delete/<int:id>', methods=['GET'])
-@login_required
-def blog_delete(id):
-    post = Post.query.get(id)
-    if request.method == 'GET':
-        db.session.delete(post)
-        db.session.commit()
-    return redirect(url_for('blog'))
-
-
-# お気に入り追加
-@app.route('/favorite/<int:id>', methods=['GET'])
-@login_required
-def blog_favorite(id):
-    if request.method == 'GET' and current_user.is_authenticated:
-        setting = current_user.get_id()  # ログインユーザーの把握
-        user = User.query.get(setting)  # レコードの取得
-        logged = user.user_id
-        post = Post.query.get(id)  # DBを参照する
-        res = Favorite.query.filter_by(name=logged, title_no=id).all()
-        if res:
-            return redirect(url_for('blog'))
-        else:
-            set1 = user.user_id
-            set2 = int(post.id)
-            set3 = post.title  # DBを参照する
-            set4 = datetime.datetime.now()
-            tsuika = Favorite(name=set1, title_no=set2, title=set3, time=set4)
-            db.session.add(tsuika)
-            db.session.commit()
-            return redirect(url_for('blog'))
-
-
-# お気に入り閲覧
-@app.route('/favorite', methods=['GET', 'POST'])
-@login_required
-def favorite_manage():
-    if request.method == 'GET':
-        base_favorite=True
-        setting = current_user.get_id()  # ログインユーザーの把握
-        user = User.query.get(setting)  # レコードの取得
-        logged = user.user_id
-        favorites = Favorite.query.filter_by(name=logged).all()
-        return render_template('favorite.html', logged=logged, favorites=favorites,base_favorite=base_favorite)
-    else:
-        return redirect(url_for('/blog'))
-
-
-# お気に入り削除
-@app.route('/favorite/delete/<int:id>', methods=['GET'])
-@login_required
-def favorite_delete(id):
-    setting = current_user.get_id()  # ログインユーザーの把握
-    user = User.query.get(setting)  # レコードの取得
-    logged = user.user_id
-    record = Favorite.query.filter_by(
-        name=logged, title_no=id).first()  # レコードを取得
-    if request.method == 'GET':
-        db.session.delete(record)
-        db.session.commit()
-        return redirect('/favorite')
-    else:
-        return redirect('/favorite')
