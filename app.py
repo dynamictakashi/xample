@@ -235,7 +235,9 @@ def blog_edit(id):
             return render_template('postedit.html', post=post, base_blog=base_blog, error=err_msg)
         elif int(30) > len(title) and 500 > len(body):
             posted = Post(title=title, body=body, time=time)
-            db.session.add(posted)
+            post.title=title
+            post.body=body
+            post.time=time
             db.session.commit()
             title_post = 'Sucessful to Edit!'
             return render_template('home.html', title_notice=title_post)
