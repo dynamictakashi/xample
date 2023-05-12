@@ -224,7 +224,7 @@ def blog_edit(id):
     base_blog = True
     post = Post.query.get(id)
     if request.method == 'GET':
-        return render_template('postedit.html', post=post, base_blog=base_blog, error=err_msg)
+        return render_template('postedit.html', post=post, base_blog=base_blog)
     else:
         title = request.form['title']
         body = request.form['body']
