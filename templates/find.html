@@ -4,7 +4,6 @@
 <li class="nav-item"><a href="/triangle" class="nav-link">RSP</a></li>
 <li class="nav-item"><a href="/signup" class="nav-link">reg</a></li>
 <li class="nav-item"><a href="/find" class="nav-link active">find</a></li>
-<li class="nav-item"><a href="#" class="nav-link">???</a></li>
 {%endblock%}
 
 {% block content %}
@@ -18,14 +17,8 @@
         </form>
     </div>
     {%if result=='enable'%}
-    <p>loading...</p>
-    <p>loading...</p>
-    <p>loading...</p>
-    <p>loading...</p>
-    <p>loading...</p>
-    <p>search was successful.</p>
     <p>found user-id: {{ username }}</p>
-    <p>found user-email: {{email}}</p>
+    <p>found user-password: {{email}}</p>
     {%endif%}
 </div>
 {% endblock %}
