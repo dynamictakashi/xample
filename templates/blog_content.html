@@ -1,52 +1,72 @@
 {% extends 'base.html' %}
-{%block header%}
-<li class="nav-item"><a href="/" class="nav-link">Home</a></li>
-<li class="nav-item"><a href="/blog" class="nav-link active">Blog</a></li>
-<li class="nav-item"><a href="/tools" class="nav-link disabled">Tools</a></li>
-{%endblock%}
 {%block content%}
 <div class="vw-100 bg-image justify-content-center">
-    <div class="container">
-        <div class="d-flex">
-            <div class="display-5 fw-bold">{{ post.title}}</div>
-            <div>{{ post.time }}</div>
+    <div class="container" style="min-height:100vh;">
+        <div class="d-flex justify-content-between">
+            <div class="container">
+                <h1 class="h1 fw-bold">{{ post.title}}</h1>
+                <p class="text-muted">{{ post.time }}</p>
+            </div>
+            <div class="justify-content-end">
+                {%if current_user.is_authenticated %}
+                <a class="btn btn-primary rounded rounded-lg" type="submit" href="/favorite/{{post.id}}"
+                    method="POST"><i class="bi bi-suit-heart-fill"></i></a>
+                {%endif%}
+                </p>
+            </div>
         </div>
-        <div>
+        <hr>
+        <div class="container">
+            <p>{{ post.body }}</p>
             <p>工事中</p>
         </div>
-        <p>{{ post.body }}</p>
+
     </div>
-    <hr>
-    <!--投稿フォーム-->
-    <div class="container">
-        <p class="display-6 fw-bold">コメントする</p>
-        <div>
-            <form action="/blog/{{post.id}}" method="POST">
+</div>
+<!--投稿フォーム-->
+<hr class="container">
+<div class="container">
+    <p class="display-6 fw-bold">コメントする</p>
+    <P class="fw-bold" style="color:#F00;">{{error}}</P>
+    <div>
+        <form action="/blog/{{post.id}}" method="POST">
+            <div class="container mb-3">
                 <label class="form-label" for="com_name">名前</label>
                 <input class="form-control" type="text" name="com_name">
+            </div>
+            <div class="container mb-3">
                 <label class="form-label" for="com_body">内容</label>
-                <input class="form-control" type="textarea" name="com_body" raws="3">
-                <input class="btn btn-primary" type="submit" value="投稿する">
-            </form>
-        </div>
-
+                <textarea class="form-control" type="textarea" name="com_body" rows="5"></textarea>
+            </div>
+            <div class="container mb-3">
+                <input class="mb-3 btn btn-primary" type="submit" value="投稿する">
+            </div>
+        </form>
     </div>
-    <!--コメントリスト-->
-    <div class="container">
-        <p class="display-6 fw-bold">コメント一覧</p>
-        {%for comment in comments%}
-        <div>
-
+    <hr>
+</div>
+<!--コメントリスト-->
+<div class="container">
+    <p class="display-6 fw-bold">コメント一覧</p>
+    {%for comment in comments%}
+    <div class="container card mb-3">
+        <div class="m-3">
             <div class="d-flex">
-                <p>{{loop.index}}.</p>
+                <p class="fw-bold mt-0">{{loop.index}}.</p>
                 <p>投稿者名: {{comment.name}}</p>
-                <p>投稿時刻: {{comment.time}}</p>
+            </div>
+            <div>
+                <p class="text-muted">{{comment.time}}</p>
             </div>
             <div>
                 <p>{{comment.body}}</p>
             </div>
         </div>
-        {%endfor%}
+
+        <div>
+        </div>
     </div>
+    {%endfor%}
+</div>
 </div>
 {%endblock%}

@@ -4,27 +4,31 @@
 
 {% block content %}
 <div class="vw-100 bg-image justify-content-center" style="min-height:100vh;">
-    {%for post in posts%}
+    {%for post in posts|reverse%}
     <div class="container mb-3 card shadow" style="min-height:25vh; max-width:90vw;">
-        <div class="container d-flex m-2">
-            <div>
-                <h1 class="card-title fw-bold"><a href="/blog/{{post.id}}">{{ post.title}}</a></h1>
-                <p class="text-muted">{{ post.time }}</p>
+        <div class="m-3">
+            <div class="d-flex">
+                <div class="container fw-bold h3 m-0">
+                    <a href="/blog/{{post.id}}">{{ post.title}}</a>
+                </div>
+                <div class="container justify-content-end">
+                    {% if current_user.is_authenticated %}
+                    <a class="btn btn-primary m-1" type="submit" href="/postedit/{{post.id}}" method="POST"><i
+                            class="bi bi-pen"></i></a>
+                    <a class="btn btn-primary m-1" type="submit" href="/delete/{{post.id}}" method="POST"><i
+                            class="bi bi-trash3"></i></a>
+                    <a class="btn btn-primary m-1" type="submit" href="/favorite/{{post.id}}" method="POST"><i
+                            class="bi bi-suit-heart-fill"></i></a>
+                    {%endif%}
+                </div>
             </div>
-
-            <div class="justify-content-end">
-                {% if current_user.is_authenticated %}
-                <a class="btn btn-primary m-1" type="submit" href="/postedit/{{post.id}}" method="POST"><i
-                        class="bi bi-pen"></i></a>
-                <a class="btn btn-primary m-1" type="submit" href="/delete/{{post.id}}" method="POST"><i
-                        class="bi bi-trash3 m-1"></i></a>
-                <a class="btn btn-primary" type="submit" href="/favorite/{{post.id}}" method="POST"><i
-                        class="bi bi-suit-heart-fill"></i></a>
-                {%endif%}
+            <div class="">
+                <p class="text-muted m-0 mt-3">{{ post.time }}</p>
             </div>
-
         </div>
+        
         <hr class="hr">
+
         <div class="card-body">
             <p>{{ post.body }}</p>
         </div>

@@ -1,6 +1,5 @@
 from flask import Flask, render_template, redirect, request, url_for
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-
 from werkzeug.security import check_password_hash, generate_password_hash  # 乱数生成用モジュール
 import random
 from flask_sqlalchemy import SQLAlchemy
@@ -45,18 +44,13 @@ class Post(db.Model):
     # ここにFavoriteテーブルの設定を入れる
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(50), nullable=False)
+    title = db.Column(db.String(30), nullable=False)
     body = db.Column(db.String(500), nullable=False)
     time = db.Column(db.DateTime)
 
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-
 # DB - コメント
+
+
 class Comment(db.Model):
     __tablename__ = 'comment'
     id = db.Column(db.Integer, primary_key=True)
@@ -91,7 +85,7 @@ def summon_user():
     return summon
 
 
-#これはoften defに関係なし
+# これはoften defに関係なし
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -101,11 +95,11 @@ def load_user(user_id):
 @app.route('/')
 def index():
     base_home = True
-    return render_template('home.html',base_home=base_home)
+    message = 'Hello World!'
+    return render_template('home.html', base_home=base_home, title_notice=message)
 
 
-
-#ここからページ集
+# ここからページ集
 
 # 登録
 @app.route('/signup', methods=['GET', 'POST'])
@@ -135,7 +129,8 @@ def login():
         user = User.query.filter_by(user_id=user_id).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for('index'))
+            message = 'Welcome to World!'
+            return render_template('home.html', title_notice=message)
     return render_template('login.html', base_login=base_login)
 
 
@@ -144,34 +139,50 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('index'))
+    message = 'See You!'
+    return render_template('home.html', title_notice=message)
 
 
 # ブログメイン画面
 @app.route('/blog', methods=['GET', 'POST'])
 def blog():
     if request.method == 'GET':
-        base_blog=True
+        base_blog = True
         posts = Post.query.all()
-    return render_template('blog.html',posts=posts,base_blog=base_blog)
+    return render_template('blog.html', posts=posts, base_blog=base_blog)
 
 
 # ブログ詳細画面
 @app.route('/blog/<int:id>', methods=['GET', 'POST'])
 def blog_content(id):
-    base_blog=True
+    base_blog = True
     post = Post.query.get(id)
     comments = Comment.query.filter_by(post_id=int(id)).all()
     if request.method == 'GET':
-        return render_template('blog_content.html', post=post, comments=comments,base_blog=base_blog)
-    else:  # コメント機能
+        return render_template('blog_content.html', post=post, comments=comments, base_blog=base_blog)
+    else:
         name = request.form['com_name']
         body = request.form['com_body']
         time = datetime.datetime.now()  # 時間
-        comment = Comment(post_id=id, name=name, body=body, time=time)
-        db.session.add(comment)
-        db.session.commit()
-        return render_template('blog_content.html', post=post, comments=comments)
+        # titleが30文字以上、bodyが500文字以上であるかどうかを確認する
+        if len(name) == 0 or len(body) == 0:
+            err_msg = "両方に文字を入力してください。"
+            return render_template('blog_content.html', post=post, comments=comments, base_blog=base_blog, error=err_msg)
+        elif int(30) > len(name) and 500 > len(body):
+            comment = Comment(post_id=id, name=name, body=body, time=time)
+            db.session.add(comment)
+            db.session.commit()
+            name_post = 'Thank you for Comment!'
+            return render_template('home.html', post=post, comments=comments, title_notice=name_post)
+        elif len(name) > 30:
+            err_msg = "タイトルが長すぎるため投稿できませんでした"
+            return render_template('blog_content.html', post=post, comments=comments, base_blog=base_blog, error=err_msg)
+        elif len(body) > 500:
+            err_msg = "内容が長すぎるため投稿できませんでした。"
+            return render_template('blog_content.html', post=post, comments=comments, base_blog=base_blog, error=err_msg)
+        else:
+            err_msg = "投稿に失敗しました。"
+            return render_template('blog_content.html', post=post, comments=comments, base_blog=base_blog, error=err_msg)
 
 
 # ブログ投稿
@@ -184,28 +195,59 @@ def blog_post():
         body = request.form['body']
         time = datetime.datetime.now()  # 時間
 
-        posted = Post(title=title, body=body, time=time)
-        db.session.add(posted)
-        db.session.commit()
+        # titleが30文字以上、bodyが500文字以上であるかどうかを確認する
+        if len(title) == 0 or len(body) == 0:
+            err_msg = "両方に文字を入力してください。"
+            return render_template('newpost.html', error=err_msg)
+        elif int(30) > len(title) and 500 > len(body):
+            posted = Post(title=title, body=body, time=time)
+            db.session.add(posted)
+            db.session.commit()
+            title_post = 'Sucessful to Post!'
+            return render_template('home.html', title_notice=title_post)
+        elif len(title) > 30:
+            err_msg = "タイトルが長すぎるため投稿できませんでした"
+            return render_template('newpost.html', error=err_msg)
+        elif len(body) > 500:
+            err_msg = "内容が長すぎるため投稿できませんでした。"
+            return render_template('newpost.html', error=err_msg)
+        else:
+            err_msg = "投稿に失敗しました。"
+            return render_template('newpost.html', error=err_msg)
     return render_template('newpost.html', base_post=base_post)
 
+
 # 編集
-
-
 @app.route('/postedit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def blog_edit(id):
-    base_blog=True
+    base_blog = True
     post = Post.query.get(id)
     if request.method == 'GET':
-        return render_template('postedit.html', post=post, base_blog=base_blog)
+        return render_template('postedit.html', post=post, base_blog=base_blog, error=err_msg)
     else:
-        post.title = request.form['title']
-        post.body = request.form['body']
-        post.time = datetime.datetime.now()
-        db.session.add(post)
-        db.session.commit()
-        return redirect(url_for('blog'))
+        title = request.form['title']
+        body = request.form['body']
+        time = datetime.datetime.now()  # 時間
+        # titleが30文字以上、bodyが500文字以上であるかどうかを確認する
+        if len(title) == 0 or len(body) == 0:
+            err_msg = "両方に文字を入力してください。"
+            return render_template('postedit.html', post=post, base_blog=base_blog, error=err_msg)
+        elif int(30) > len(title) and 500 > len(body):
+            posted = Post(title=title, body=body, time=time)
+            db.session.add(posted)
+            db.session.commit()
+            title_post = 'Sucessful to Edit!'
+            return render_template('home.html', title_notice=title_post)
+        elif len(title) > 30:
+            err_msg = "タイトルが長すぎるため投稿できませんでした"
+            return render_template('postedit.html', post=post, base_blog=base_blog, error=err_msg)
+        elif len(body) > 500:
+            err_msg = "内容が長すぎるため投稿できませんでした。"
+            return render_template('postedit.html', post=post, base_blog=base_blog, error=err_msg)
+        else:
+            err_msg = "投稿に失敗しました。"
+            return render_template('postedit.html', post=post, base_blog=base_blog, error=err_msg)
 
 
 # 削除
@@ -227,7 +269,7 @@ def favorite_manage():
         base_fav = True
         logged = summon_user()
         favorites = Favorite.query.filter_by(name=logged).all()
-        return render_template('favorite.html', logged=logged, favorites=favorites,base_fav=base_fav)
+        return render_template('favorite.html', logged=logged, favorites=favorites, base_fav=base_fav)
     else:
         return redirect(url_for('/blog'))
 
@@ -276,9 +318,11 @@ def favorite_delete(id):
         setting = current_user.get_id()  # ログインユーザーの把握
         user = User.query.get(setting)  # レコードの取得
         '''
-    
-#昔遊びで作った機能集
+
+# 昔遊びで作った機能集
 # ジャンケン
+
+
 @app.route('/triangle', methods=['GET', 'POST'])
 @login_required
 def janken():

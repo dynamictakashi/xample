@@ -7,6 +7,9 @@
 {%block content%}
 <div class="container">
     <p class="h4 fw-bold">投稿する</p>
+    {%if error%}
+    <p class="display-7 fw-bold" style="color: #F00;">{{error}}</p>
+    {%endif%}
 <form action="/newpost" method="POST">
     <div class="mb-3">
         <label class="form-label fw-bold" for="title">タイトル</label>
